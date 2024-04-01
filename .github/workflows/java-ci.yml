@@ -19,12 +19,22 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
       - name: Run tests
-        run: ./gradlew test
+        run: |
+          set +e
+          ./gradlew test
+          TEST_EXIT_CODE=$?
+          if [ $TEST_EXIT_CODE -ne 0 ]; then
+            exit 1
+          fi
       - name: Generate code coverage report
         run: ./gradlew jacocoTestReport
       - name: Check code coverage
-        run: ./gradlew jacocoTestCoverageVerification
-        if: always()
+        run: |
+          ./gradlew jacocoTestCoverageVerification
+          COVERAGE_EXIT_CODE=$?
+          if [ $COVERAGE_EXIT_CODE -ne 0 ]; then
+            exit 2
+          fi
   check-failing-tests:
     needs: build
     runs-on: ubuntu-latest
